@@ -7,8 +7,8 @@
 
 using namespace std;
 
-const int totalsize = 16;    // 全局矩阵列数（可变）
-const int step = 10;         // 迭代步数
+const int totalsize = 2048;    // 全局矩阵列数（可变）
+const int step = 1000;         // 迭代步数
 
 const int tag1 = 3;
 const int tag2 = 4;
