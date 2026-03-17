@@ -9,13 +9,14 @@ SOURCES		:= $(wildcard *.cpp)
 OBJECTS		:= $(SOURCES:.cpp=.o)
 OUTPUT		:= $(NAME)
 
+TOTALSIZE	?= 128
 NP			?= 4
 
 $(OUTPUT): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
+	$(CXX) $(CXXFLAGS) -DTOTALSIZE=$(TOTALSIZE) $^ $(LDFLAGS) -o $@
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -DTOTALSIZE=$(TOTALSIZE) -c $< -o $@
 
 run:
 	mpirun -np $(NP) ./$(OUTPUT)
