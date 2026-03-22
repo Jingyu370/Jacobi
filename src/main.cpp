@@ -17,7 +17,7 @@ int main(int argc, char **argv){
     setup_grid_dims(size, dims);
     
     MPI_Comm cart_comm;
-    // 创建二维拓扑通信域
+    // 创建通信域
     MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, 0, &cart_comm);
     // 在新通信域中获取当前的 rank 和 坐标
     MPI_Comm_rank(cart_comm, &rank);
@@ -45,9 +45,14 @@ int main(int argc, char **argv){
     double mem_init_time = MPI_Wtime() - mem_init_start;
 
     // Jacobi 迭代
-    double comm_total = 0.0, compute_total = 0.0;
-    jacobi_iteration_loop_2d(cart_comm, up, down, left, right, local_rows, local_cols, a, b, comm_total, compute_total);
+    double comm_init_time = 0.0;
+    
+    double iteration_start = MPI_Wtime(); // 记录迭代开始
+    
+    jacobi_iteration_loop_2d(cart_comm, up, down, left, right, local_rows, local_cols, a, b, comm_init_time);
+    
     MPI_Barrier(cart_comm);
+    double iteration_time = MPI_Wtime() - iteration_start; // 记录迭代总耗时
 
     // 文件 IO
     double io_start = MPI_Wtime();
@@ -64,8 +69,8 @@ int main(int argc, char **argv){
 
     // 性能报告
     if (rank == 0) {
-        print_performance_console(size, dims, mem_init_time, comm_total, compute_total, io_time, total_time);
-        write_performance_report(filename, size, dims, mem_init_time, comm_total, compute_total, io_time, total_time);
+        print_performance_console(size, dims, mem_init_time, comm_init_time, iteration_time, io_time, total_time);
+        write_performance_report(filename, size, dims, mem_init_time, comm_init_time, iteration_time, io_time, total_time);
     }
 
     MPI_Finalize();
