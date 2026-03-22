@@ -1,26 +1,34 @@
 export I_MPI_CXX ?= icx
+CXX      := mpiicpc
 
-CXX		    := mpiicpc
-CXXFLAGS 	:= -std=c++17 -Wall -Wextra -g
-LDFLAGS		:= -lstdc++
+ROWS     ?= 128
+COLS     ?= 128
+NP       ?= 4
 
-NAME		:= $(shell basename $(CURDIR))
-SOURCES		:= $(wildcard *.cpp)
-OBJECTS		:= $(SOURCES:.cpp=.o)
-OUTPUT		:= $(NAME)
+CXXFLAGS := -std=c++17 -Wall -Wextra -g -I./inc \
+            -DTOTAL_ROWS=$(ROWS) \
+            -DTOTAL_COLS=$(COLS)
+            
+LDFLAGS  := -lstdc++
 
-NP			?= 4
+SRCDIR   := src
+OBJDIR   := obj
+SOURCES  := $(wildcard $(SRCDIR)/*.cpp)
+OBJECTS  := $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SOURCES))
+OUTPUT   := jacobi_2d
 
 $(OUTPUT): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@
 
-%.o: %.cpp
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	@mkdir -p $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-run:
+run: $(OUTPUT)
+	@mkdir -p result
 	mpirun -np $(NP) ./$(OUTPUT)
 
 clean:
-	rm -rf $(OUTPUT) *.o
+	rm -rf $(OUTPUT) $(OBJDIR)
 
 .PHONY: run clean
